@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: items-service
+  cloud:
+    config:
+      fail-fast: true
+
+server:
+  port: 8080

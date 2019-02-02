@@ -1,0 +1,22 @@
+
+eureka:
+  client:
+    register-with-eureka: true
+
+spring:
+  # Enabling h2 console, accessible at http://localhost:8080/h2-console (use JDBC URL: jdbc:h2:mem:testdb, user: sa, password: empty (leave blank))
+  h2:
+    console:
+      enabled: true
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        generate_statistics: true
+
+logging:
+  level:
+    ROOT: INFO
+    org.hibernate.stat: DEBUG
+    org.hibernate.type: TRACE
