@@ -1,4 +1,4 @@
-package org.microservices.itemswebapi;
+package org.microservices.itemswebapi.web;
 
 import feign.hystrix.FallbackFactory;
 import org.springframework.cloud.netflix.ribbon.RibbonClient;
@@ -7,9 +7,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import java.util.List;
+
 @FeignClient(name = "items-service", fallbackFactory = ItemsServiceProxy.ItemsServiceFeignClientFallbackFactory.class)
 @RibbonClient(name = "items-service")
 public interface ItemsServiceProxy {
+
+    @GetMapping("/items")
+    List<Item> getItems();
 
     @GetMapping("/items/{id}")
     Item getItem(@PathVariable Long id);
@@ -19,8 +24,16 @@ public interface ItemsServiceProxy {
 
         @Override
         public ItemsServiceProxy create(Throwable throwable) {
-            return id -> {
-                throw new ItemsWebApiException(throwable);
+            return new ItemsServiceProxy() {
+                @Override
+                public List<Item> getItems() {
+                    throw new ItemsWebApiException(throwable);
+                }
+
+                @Override
+                public Item getItem(Long id) {
+                    throw new ItemsWebApiException(throwable);
+                }
             };
         }
     }

@@ -48,7 +48,7 @@ public class ItemsServiceController {
                     return itemRepository.save(employee);
                 })
                 .orElseGet(() -> {
-                    changedItem.setId(id);
+                    changedItem.setId(null);
                     return itemRepository.save(changedItem);
                 });
 

@@ -1,4 +1,4 @@
-package org.microservices.itemswebapi;
+package org.microservices.itemswebapi.web;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;

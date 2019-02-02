@@ -1,4 +1,4 @@
-package org.microservices.itemswebapi;
+package org.microservices.itemswebapi.web;
 
 public class Item {
 
