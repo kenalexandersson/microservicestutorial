@@ -1,4 +1,4 @@
-package org.microservices.itemsui;
+package org.microservices.itemswebapi;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class ItemUIController {
+public class ItemsWebApiController {
 
     private Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 

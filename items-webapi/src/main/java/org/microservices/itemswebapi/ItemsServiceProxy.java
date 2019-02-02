@@ -1,4 +1,4 @@
-package org.microservices.itemsui;
+package org.microservices.itemswebapi;
 
 import feign.hystrix.FallbackFactory;
 import org.springframework.cloud.netflix.ribbon.RibbonClient;
@@ -20,7 +20,7 @@ public interface ItemsServiceProxy {
         @Override
         public ItemsServiceProxy create(Throwable throwable) {
             return id -> {
-                throw new ItemsUiException(throwable);
+                throw new ItemsWebApiException(throwable);
             };
         }
     }

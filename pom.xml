@@ -24,7 +24,7 @@
         <module>config-server</module>
         <module>service-discovery-server</module>
         <module>items-service</module>
-        <module>items-ui</module>
+        <module>items-webapi</module>
     </modules>
 
     <dependencies>

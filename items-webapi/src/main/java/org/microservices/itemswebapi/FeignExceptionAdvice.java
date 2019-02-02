@@ -1,4 +1,4 @@
-package org.microservices.itemsui;
+package org.microservices.itemswebapi;
 
 import feign.FeignException;
 import org.slf4j.Logger;

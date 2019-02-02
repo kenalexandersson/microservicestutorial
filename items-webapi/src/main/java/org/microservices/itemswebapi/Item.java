@@ -1,4 +1,4 @@
-package org.microservices.itemsui;
+package org.microservices.itemswebapi;
 
 public class Item {
 
