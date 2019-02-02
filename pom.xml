@@ -25,6 +25,7 @@
         <module>service-discovery-server</module>
         <module>items-service</module>
         <module>items-webapi</module>
+        <module>ui-gateway</module>
     </modules>
 
     <dependencies>
