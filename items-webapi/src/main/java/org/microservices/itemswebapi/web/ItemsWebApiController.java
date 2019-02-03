@@ -15,11 +15,16 @@ public class ItemsWebApiController {
     private Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
-    private ItemsServiceProxy proxy;
+    private ItemsServiceProxy itemsServiceProxy;
+
+    @Autowired
+    private ReviewsServiceProxy reviewsServiceProxy;
 
     @GetMapping(path = "/items-webapi/items")
     public List<Item> getItems() {
-        List<Item> items = proxy.getItems();
+        List<Item> items = itemsServiceProxy.getItems();
+        List<Review> reviews = reviewsServiceProxy.getReviews();
+
 
         LOGGER.info("{}", items);
 
@@ -27,12 +32,15 @@ public class ItemsWebApiController {
     }
 
     @GetMapping(path = "/items-webapi/items/{id}")
-    public Item getItem(@PathVariable Long id) {
+    public ItemInfoDto getItem(@PathVariable Long id) {
 
-        Item item = proxy.getItem(id);
+        Item item = itemsServiceProxy.getItem(id);
+        List<Review> reviews = reviewsServiceProxy.getReviews("item", id);
 
-        LOGGER.info("{}", item);
+        ItemInfoDto itemInfoDto = ItemInfoDto.of(item, reviews);
 
-        return item;
+        LOGGER.info("{}", itemInfoDto);
+
+        return itemInfoDto;
     }
 }
