@@ -1,0 +1,226 @@
+= Spring Cloud micro services tutorial
+
+== Running order
+
+=== Checkout base project
+This is a maven multi module with a prepared base pom. Initially it is empty of modules.
+
+=== Create Config server
+
+. New module -> Spring Initializr
+
+. Add dependencies
++
+----
+spring-cloud-config-server
+spring-boot-starter-actuator
+----
++
+. Remove content already present in parent pom
+
+. Open `ConfigServerApplication` and add annotation `@EnableConfigServer`
+
+. Create `src/main/resources/application.yml`
++
+----
+spring:
+  application:
+    name: config-server
+  profiles:
+    active: native
+
+  cloud:
+    config:
+      server:
+        native:
+          search-locations: classpath:/config
+
+server:
+  port: 8888
+----
+
+. Start server
+
+A spring-cloud-config-server normally uses a git-repository as the default location for loading properties. We are instead using a classpath location just during our experimentation.
+
+=== Create service discovery server
+
+. New module -> Spring Initializr
+
+. Add dependencies
++
+----
+spring-cloud-starter-netflix-eureka-server
+spring-cloud-config-client
+spring-boot-starter-actuator
+----
++
+
+. Remove content already present in parent pom
+
+. Open `ServiceDiscoveryServerApplication` and add annotation `@EnableEurekaServer`
+
+. Create `src/main/resources/bootstrap.yml`
++
+----
+spring:
+  application:
+    name: service-discovery-server
+  cloud:
+    config:
+      fail-fast: true
+----
+
+. Go back to `config-server` and add `src/main/resources/config/service-discovery-server.yml`
++
+----
+server:
+  port: 8761
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: false
+----
+
+. Reload config server and view new config via `http://localhost:8888/service-discovery-server/native`
+
+. Start service-discovery-server
+.. note how it retrieves config from config-server
+.. note that it actually register itself to itself
+
+. Go to http://localhost:8761/ and check the UI
+
+=== Create items service
+
+. New module -> Spring Initializr
+
+. Add dependencies
++
+----
+spring-boot-starter-data-jpa
+spring-boot-starter-web
+spring-cloud-config-client
+spring-cloud-starter-netflix-eureka-client
+spring-boot-starter-actuator
+h2
+----
++
+
+. Remove content already present in parent pom
+
+. Create `src/main/resources/bootstrap.yml`
++
+----
+spring:
+  application:
+    name: items-service
+  cloud:
+    config:
+      fail-fast: true
+
+server:
+  port: 8080
+----
+
+. Go back to `config-server` and add `src/main/resources/config/items-service.yml`
++
+----
+eureka:
+  client:
+    register-with-eureka: true
+
+spring:
+  # Enabling h2 console, accessible at http://localhost:8080/h2-console (use JDBC URL: jdbc:h2:mem:testdb, user: sa, password: empty (leave blank))
+  h2:
+    console:
+      enabled: true
+  jpa:
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        generate_statistics: false
+
+logging:
+  level:
+    ROOT: INFO
+    org.hibernate.stat: INFO
+    org.hibernate.type: INFO
+----
+
+. Reload config server and view new config via `http://localhost:8888/items-service/native`
+
+
+. Add data import sql file `data.sql`
++
+----
+insert into item(id, name) values(1, 'Spoon');
+insert into item(id, name) values(2, 'Fork');
+insert into item(id, name) values(3, 'Knife');
+----
+
+. Create JPA-entity `model/Item.java`
++
+[source,java]
+----
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@EqualsAndHashCode
+@ToString
+@Entity
+public class Item {
+
+    @Id
+    @GeneratedValue
+    private Long id;
+
+    private String name;
+}
+----
+
+. Create `persistence/ItemRepository`
++
+[source,java]
+----
+@Repository
+public interface ItemRepository extends JpaRepository<Item, Long> {
+
+}
+----
+
+. Add rest controller `web/ItemsServiceController.java` by copying content from https://github.com/kenalexandersson/microservicestutorial/blob/master/items-service/src/main/java/org/microservices/itemsservice/web/ItemsServiceController.java
+
+. Add class `web/ItemDto.java`
++
+[source,java]
+----
+@Data
+@AllArgsConstructor
+public class ItemDto {
+
+    private Long id;
+    private String name;
+    private int port;
+
+    public static ItemDto of(Item item, int port) {
+        return new ItemDto(item.getId(), item.getName(), port);
+    }
+}
+----
+
+. Add metadata
++
+----
+TODO: Fix this via properties file
+----
+
+. Start service
+.. note how it retrieves config from config-server
+.. note that it register itself to discovery server
+... The meta data can be seen at http://localhost:8761/eureka/apps/items-service
+
+. Access service using http://localhost:8080/items and http://localhost:8080/items/1
+
+

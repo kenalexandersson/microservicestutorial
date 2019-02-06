@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.util.HashMap;
 import java.util.Map;
 
 @Component
@@ -15,6 +16,10 @@ public class EurekaMetadataReporter {
 
     @PostConstruct
     private void addMetaData() {
-        applicationInfoManager.registerAppMetadata(Map.of("crewmodule", "", "description", "Some description"));
+        Map<String, String> metaData = new HashMap<>();
+        metaData.put("crewmodule", "");
+        metaData.put("description", "Some description");
+
+        //applicationInfoManager.registerAppMetadata(metaData);
     }
 }

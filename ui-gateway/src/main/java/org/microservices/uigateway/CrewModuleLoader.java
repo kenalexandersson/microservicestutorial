@@ -43,7 +43,7 @@ public class CrewModuleLoader {
     private Optional<CrewModule> toCrewModule(String serviceId) {
         Map<String, String> metadata = discoveryClient.getInstances(serviceId).stream()
                 .findFirst()
-                .orElseThrow()
+                .orElseThrow(() -> new RuntimeException("No crewmodule defined"))
                 .getMetadata();
 
         CrewModule crewModule = null;
