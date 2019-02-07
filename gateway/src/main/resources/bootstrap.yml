@@ -1,6 +1,6 @@
 spring:
   application:
-    name: ui-gateway
+    name: gateway
   cloud:
     config:
       fail-fast: true

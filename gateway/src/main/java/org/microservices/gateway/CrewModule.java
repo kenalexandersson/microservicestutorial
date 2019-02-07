@@ -1,4 +1,4 @@
-package org.microservices.uigateway;
+package org.microservices.gateway;
 
 public class CrewModule {
 

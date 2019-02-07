@@ -1,4 +1,4 @@
-package org.microservices.uigateway;
+package org.microservices.gateway;
 
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;

@@ -1,4 +1,4 @@
-package org.microservices.uigateway;
+package org.microservices.gateway;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,4 +1,4 @@
-package org.microservices.uigateway;
+package org.microservices.gateway;
 
 import brave.sampler.Sampler;
 import org.springframework.boot.SpringApplication;
@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Bean;
 
 @EnableZuulProxy
 @SpringBootApplication
-public class UiGatewayApplication {
+public class GatewayApplication {
 
     @Bean
     public LoggingFilter loggingFilter() {
@@ -21,7 +21,7 @@ public class UiGatewayApplication {
     }
 
     public static void main(String[] args) {
-        SpringApplication.run(UiGatewayApplication.class, args);
+        SpringApplication.run(GatewayApplication.class, args);
     }
 
 }
