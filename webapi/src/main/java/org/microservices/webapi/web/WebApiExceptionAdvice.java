@@ -1,4 +1,4 @@
-package org.microservices.itemswebapi.web;
+package org.microservices.webapi.web;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -7,12 +7,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ControllerAdvice
-public class ItemsWebApiExceptionAdvice {
+public class WebApiExceptionAdvice {
 
     @ResponseBody
-    @ExceptionHandler(ItemsWebApiException.class)
+    @ExceptionHandler(WebApiException.class)
     @ResponseStatus(HttpStatus.OK)
-    public String ItemUiExceptionHandler(ItemsWebApiException ex) {
+    public String ItemUiExceptionHandler(WebApiException ex) {
         return ex.getMessage();
     }
 }

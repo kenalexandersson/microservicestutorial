@@ -9,7 +9,7 @@ eureka:
 
 zuul:
   routes:
-    items-webapi:
+    webapi:
       sensitiveHeaders: Cookie,Set-Cookie,Authorization
       stripPrefix: false
 

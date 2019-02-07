@@ -1,4 +1,4 @@
-package org.microservices.itemswebapi.web;
+package org.microservices.webapi.web;
 
 import feign.hystrix.FallbackFactory;
 import org.springframework.cloud.netflix.ribbon.RibbonClient;
@@ -27,12 +27,12 @@ public interface ItemsServiceProxy {
             return new ItemsServiceProxy() {
                 @Override
                 public List<Item> getItems() {
-                    throw new ItemsWebApiException(throwable);
+                    throw new WebApiException(throwable);
                 }
 
                 @Override
                 public Item getItem(Long id) {
-                    throw new ItemsWebApiException(throwable);
+                    throw new WebApiException(throwable);
                 }
             };
         }

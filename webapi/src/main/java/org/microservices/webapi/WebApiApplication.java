@@ -1,4 +1,4 @@
-package org.microservices.itemswebapi;
+package org.microservices.webapi;
 
 import brave.sampler.Sampler;
 import org.springframework.boot.SpringApplication;
@@ -7,10 +7,10 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
 
-@EnableFeignClients("org.microservices.itemswebapi")
+@EnableFeignClients("org.microservices.webapi")
 @EnableDiscoveryClient
 @SpringBootApplication
-public class ItemsWebApiApplication {
+public class WebApiApplication {
 
     @Bean
     public Sampler defaultSampler() {
@@ -18,7 +18,7 @@ public class ItemsWebApiApplication {
     }
 
     public static void main(String[] args) {
-        SpringApplication.run(ItemsWebApiApplication.class, args);
+        SpringApplication.run(WebApiApplication.class, args);
     }
 }
 

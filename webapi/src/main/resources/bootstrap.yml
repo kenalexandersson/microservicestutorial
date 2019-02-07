@@ -1,6 +1,6 @@
 spring:
   application:
-    name: items-webapi
+    name: webapi
   cloud:
     config:
       fail-fast: true

@@ -24,7 +24,7 @@
         <module>config-server</module>
         <module>service-discovery-server</module>
         <module>items-service</module>
-        <module>items-webapi</module>
+        <module>webapi</module>
         <module>gateway</module>
     </modules>
 
