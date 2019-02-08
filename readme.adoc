@@ -322,6 +322,7 @@ public class WebApiController {
 [source,java]
 ----
 @Data
+@ToString
 @AllArgsConstructor
 public class Item {
 
@@ -436,3 +437,121 @@ public class ClientExceptionAdvice {
 
 . Access the url:s again to see the exception handling output
 
+=== Create Gateway
+
+. New module -> Spring Initializr
+
+. Add dependencies
++
+----
+spring-cloud-starter-config
+spring-cloud-starter-netflix-eureka-client
+spring-cloud-starter-netflix-zuul
+spring-boot-starter-actuator
+lombok
+----
++
+
+. Remove content already present in parent pom
+
+. Open `GatewayApplication` and add annotation `@EnableZuulProxy`
+
+. Create `src/main/resources/bootstrap.yml`
++
+----
+spring:
+  application:
+    name: gateway
+  cloud:
+    config:
+      fail-fast: true
+----
+
+. Go back to `config-server` and add `src/main/resources/config/gateway.yml`
++
+----
+server:
+  port: 20202
+
+eureka:
+  client:
+    register-with-eureka: true
+    service-url:
+      default-zone: http://localhost:8761/eureka
+
+zuul:
+  routes:
+    webapi:
+      sensitiveHeaders: Cookie,Set-Cookie,Authorization
+      stripPrefix: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+----
+
+. Reload config server and view new config via `http://localhost:8888/gateway/native`
+
+. Create Zuul-filter `LoggingFilter`
++
+[source,java]
+----
+public class LoggingFilter extends ZuulFilter {
+
+    private static Logger LOGGER = LoggerFactory.getLogger(LoggingFilter.class);
+
+    @Override
+    public String filterType() {
+        return PRE_TYPE;
+    }
+
+    @Override
+    public int filterOrder() {
+        return PRE_DECORATION_FILTER_ORDER - 1;
+    }
+
+    @Override
+    public boolean shouldFilter() {
+        RequestContext ctx = RequestContext.getCurrentContext();
+        return !ctx.containsKey(FORWARD_TO_KEY); // if another filter hasn't already forwarded
+    }
+
+    @Override
+    public Object run() {
+
+        RequestContext ctx = RequestContext.getCurrentContext();
+        LOGGER.info(ctx.getRequest().getRequestURL().toString());
+
+        return null;
+    }
+}
+----
+
+. Add the filter as bean in `GatewayApplication`.
++
+[source,java]
+----
+    @Bean
+    public LoggingFilter loggingFilter() {
+        return new LoggingFilter();
+    }
+----
+
+==== About CrewModule and "menu system"
+
+The service discovery metadata feature is used to obtain information about a crewmodule and how it should be represented in menu. Here is an example of how it can be loaded.
+
+[NOTE]
+The `items-service` registers metadata about itself when registering to discovery server. See `config-server/src/main/resources/config/items-service.yml`
+
+. Show metadata in discovery-server: http://localhost:8761/eureka/apps/items-service
+
+. Use code from
+.. https://github.com/kenalexandersson/microservicestutorial/blob/master/gateway/src/main/java/org/microservices/gateway/CrewModule.java
+.. https://github.com/kenalexandersson/microservicestutorial/blob/master/gateway/src/main/java/org/microservices/gateway/CrewModuleLoader.java
+
+=== Extra: Run two instances of items-service to demo Ribbon
+
+=== Extra: Add additional reviews-service to demo how webapi can aggregate services output

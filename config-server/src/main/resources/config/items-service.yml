@@ -5,6 +5,8 @@ eureka:
   instance:
     metadata-map:
       crewmodule: "crewmodule"
+      module-name: "BidPoints"
+      service-path: "/path/to/menuItem"
       owning-team: "Nimbus"
 
 spring:
