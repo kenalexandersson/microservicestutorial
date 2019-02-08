@@ -1,4 +1,9 @@
 = Spring Cloud micro services tutorial
+:toc: left
+
+== Prereq for participants
+* Lombok IntelliJ plugin installed (needed perhaps only on Mac?)
+* Postman or alternatively JSON Formatter Chrome plugin
 
 == Running order
 
@@ -104,6 +109,7 @@ spring-cloud-config-client
 spring-cloud-starter-netflix-eureka-client
 spring-boot-starter-actuator
 h2
+lombok
 ----
 +
 
@@ -210,10 +216,16 @@ public class ItemDto {
 }
 ----
 
-. Add metadata
+. Add metadata, `open config-server/src/main/resources/config/items-service.yml` and add:
 +
 ----
-TODO: Fix this via properties file
+eureka:
+  client:
+    register-with-eureka: true
+  instance:
+    metadata-map:
+      crewmodule: "crewmodule"
+      owning-team: "Nimbus"
 ----
 
 . Start service
@@ -223,4 +235,204 @@ TODO: Fix this via properties file
 
 . Access service using http://localhost:8080/items and http://localhost:8080/items/1
 
+=== Create webapi
+
+. New module -> Spring Initializr
+
+. Add dependencies
++
+----
+spring-cloud-config-client
+spring-cloud-starter-netflix-eureka-client
+spring-boot-starter-web
+spring-cloud-starter-netflix-ribbon
+spring-cloud-starter-openfeign
+spring-boot-starter-actuator
+lombok
+----
++
+
+. Remove content already present in parent pom
+
+. Open `WebApiApplication` and add annotations
+.. `@EnableDiscoveryClient`
+.. `@EnableFeignClients("org.microservices.webapi")`
+
+. Create `src/main/resources/bootstrap.yml`
++
+----
+spring:
+  application:
+    name: webapi
+  cloud:
+    config:
+      fail-fast: true
+----
+
+. Go back to `config-server` and add `src/main/resources/config/webapi.yml`
++
+----
+server:
+  port: 8100
+
+eureka:
+  client:
+    register-with-eureka: true
+    service-url:
+      default-zone: http://localhost:8761/eureka
+----
+
+. Reload config server and view new config via `http://localhost:8888/webapi/native`
+
+. Add rest controller `web/WebApiController.java`.
++
+[source,java]
+----
+@RestController
+public class WebApiController {
+
+    private Logger LOGGER = LoggerFactory.getLogger(this.getClass());
+
+    @Autowired
+    private ItemsServiceProxy proxy;
+
+    @GetMapping(path = "/webapi/items")
+    public List<Item> getItems() {
+        List<Item> items = proxy.getItems();
+
+        LOGGER.info("{}", items);
+
+        return items;
+    }
+
+    @GetMapping(path = "/webapi/items/{id}")
+    public Item getItem(@PathVariable Long id) {
+
+        Item item = proxy.getItem(id);
+
+        LOGGER.info("{}", item);
+
+        return item;
+    }
+}
+----
+
+. Create dto `web/Item`
++
+[source,java]
+----
+@Data
+@AllArgsConstructor
+public class Item {
+
+    private Long id;
+
+    private String name;
+
+    private int port;
+}
+----
+
+. Add `ItemsServiceProxy.java` (in a step by step fashion)
++
+[source,java]
+----
+@FeignClient(name = "items-service", fallbackFactory = ItemsServiceProxy.ItemsServiceFeignClientFallbackFactory.class)
+@RibbonClient(name = "items-service")
+public interface ItemsServiceProxy {
+
+    @GetMapping("/items")
+    List<Item> getItems();
+
+    @GetMapping("/items/{id}")
+    Item getItem(@PathVariable Long id);
+
+    @Component
+    class ItemsServiceFeignClientFallbackFactory implements FallbackFactory<ItemsServiceProxy> {
+
+        @Override
+        public ItemsServiceProxy create(Throwable throwable) {
+            return new ItemsServiceProxy() {
+                @Override
+                public List<Item> getItems() {
+                    throw new WebApiException(throwable);
+                }
+
+                @Override
+                public Item getItem(Long id) {
+                    throw new WebApiException(throwable);
+                }
+            };
+        }
+    }
+}
+----
+
+. Add `WebApiException.java`
++
+[source,java]
+----
+public class WebApiException extends RuntimeException {
+    public WebApiException(Throwable throwable) {
+        super(throwable);
+    }
+}
+----
+
+. Start service
+.. note how it retrieves config from config-server
+.. note that it register itself to discovery server
+
+. Access service using http://localhost:8100/webapi/items and http://localhost:8100/webapi/items/1
+
+. Access a non-existent item, discuss around the error behaviour, then add `FeignExceptionAdvice`.
++
+[source,java]
+----
+@ControllerAdvice
+public class FeignExceptionAdvice {
+
+    private Logger LOGGER = LoggerFactory.getLogger(this.getClass());
+
+    @ResponseBody
+    @ExceptionHandler(FeignException.class)
+    @ResponseStatus(HttpStatus.OK)
+    public String FeignExceptionHandler(FeignException ex) {
+        LOGGER.warn(ex.getMessage());
+        return "{}";
+    }
+}
+----
+
+. Turn off items-service, then try to access it via webapi. Discuss around the error behaviour, then add `WebApiExceptionAdvice` and `ClientExceptionAdvice`.
++
+[source,java]
+----
+@ControllerAdvice
+public class WebApiExceptionAdvice {
+
+    @ResponseBody
+    @ExceptionHandler(WebApiException.class)
+    @ResponseStatus(HttpStatus.OK)
+    public String WebApiExceptionHandler(WebApiException ex) {
+        return ex.getMessage();
+    }
+}
+----
++
+[source,java]
+----
+@ControllerAdvice
+public class ClientExceptionAdvice {
+
+    @ResponseBody
+    @ExceptionHandler(ClientException.class)
+    @ResponseStatus(HttpStatus.OK)
+    public String clientExceptionHandler(ClientException ex) {
+        return ex.getMessage();
+    }
+}
+----
+
+. Access the url:s again to see the exception handling output
 

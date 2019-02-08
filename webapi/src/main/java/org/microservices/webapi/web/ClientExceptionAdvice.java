@@ -1,5 +1,6 @@
 package org.microservices.webapi.web;
 
+import com.netflix.client.ClientException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -7,12 +8,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ControllerAdvice
-public class WebApiExceptionAdvice {
+public class ClientExceptionAdvice {
 
     @ResponseBody
-    @ExceptionHandler(WebApiException.class)
+    @ExceptionHandler(ClientException.class)
     @ResponseStatus(HttpStatus.OK)
-    public String webApiExceptionHandler(WebApiException ex) {
+    public String clientExceptionHandler(ClientException ex) {
         return ex.getMessage();
     }
 }
