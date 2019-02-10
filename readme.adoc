@@ -1,8 +1,9 @@
 = Spring Cloud micro services tutorial
 :toc: left
 
-== Prereq for participants
-* Lombok IntelliJ plugin installed (needed perhaps only on Mac?)
+== Prerequisites for participants
+* `git clone ssh://git@git.got.jeppesensystems.com:10022/ken.alexandersson/microservicestutorial.git`
+* Lombok IntelliJ plugin installed
 * Postman or alternatively JSON Formatter Chrome plugin
 
 == Running order
@@ -45,6 +46,8 @@ server:
 ----
 
 . Start server
+
+. Do a health check at http://localhost:8888/actuator/health
 
 A spring-cloud-config-server normally uses a git-repository as the default location for loading properties. We are instead using a classpath location just during our experimentation.
 
@@ -157,6 +160,8 @@ logging:
 
 . Reload config server and view new config via `http://localhost:8888/items-service/native`
 
+. Go to the h2 console to see that database is running
+.. http://localhost:8080/h2-console (use JDBC URL: jdbc:h2:mem:testdb, user: sa, password: empty (leave blank)
 
 . Add data import sql file `data.sql`
 +
@@ -225,6 +230,8 @@ eureka:
   instance:
     metadata-map:
       crewmodule: "crewmodule"
+      module-name: "BidPoints"
+      service-path: "/path/to/menuItem"
       owning-team: "Nimbus"
 ----
 
@@ -234,6 +241,9 @@ eureka:
 ... The meta data can be seen at http://localhost:8761/eureka/apps/items-service
 
 . Access service using http://localhost:8080/items and http://localhost:8080/items/1
+
+[TIP]
+Recap diagram
 
 === Create webapi
 
@@ -285,37 +295,7 @@ eureka:
 . Reload config server and view new config via `http://localhost:8888/webapi/native`
 
 . Add rest controller `web/WebApiController.java`.
-+
-[source,java]
-----
-@RestController
-public class WebApiController {
-
-    private Logger LOGGER = LoggerFactory.getLogger(this.getClass());
-
-    @Autowired
-    private ItemsServiceProxy proxy;
-
-    @GetMapping(path = "/webapi/items")
-    public List<Item> getItems() {
-        List<Item> items = proxy.getItems();
-
-        LOGGER.info("{}", items);
-
-        return items;
-    }
-
-    @GetMapping(path = "/webapi/items/{id}")
-    public Item getItem(@PathVariable Long id) {
-
-        Item item = proxy.getItem(id);
-
-        LOGGER.info("{}", item);
-
-        return item;
-    }
-}
-----
+.. https://github.com/kenalexandersson/microservicestutorial/blob/master/webapi/src/main/java/org/microservices/webapi/web/WebApiController.java
 
 . Create dto `web/Item`
 +
@@ -338,6 +318,7 @@ public class Item {
 +
 [source,java]
 ----
+//@FeignClient(name = "items-service", fallbackFactory = ItemsServiceProxy.ItemsServiceFeignClientFallbackFactory.class)
 @FeignClient(name = "items-service", fallbackFactory = ItemsServiceProxy.ItemsServiceFeignClientFallbackFactory.class)
 @RibbonClient(name = "items-service")
 public interface ItemsServiceProxy {
@@ -348,35 +329,24 @@ public interface ItemsServiceProxy {
     @GetMapping("/items/{id}")
     Item getItem(@PathVariable Long id);
 
-    @Component
-    class ItemsServiceFeignClientFallbackFactory implements FallbackFactory<ItemsServiceProxy> {
-
-        @Override
-        public ItemsServiceProxy create(Throwable throwable) {
-            return new ItemsServiceProxy() {
-                @Override
-                public List<Item> getItems() {
-                    throw new WebApiException(throwable);
-                }
-
-                @Override
-                public Item getItem(Long id) {
-                    throw new WebApiException(throwable);
-                }
-            };
-        }
-    }
-}
-----
-
-. Add `WebApiException.java`
-+
-[source,java]
-----
-public class WebApiException extends RuntimeException {
-    public WebApiException(Throwable throwable) {
-        super(throwable);
-    }
+//    @Component
+//    class ItemsServiceFeignClientFallbackFactory implements FallbackFactory<ItemsServiceProxy> {
+//
+//        @Override
+//        public ItemsServiceProxy create(Throwable throwable) {
+//            return new ItemsServiceProxy() {
+//                @Override
+//                public List<Item> getItems() {
+//                    throw new WebApiException(throwable);
+//                }
+//
+//                @Override
+//                public Item getItem(Long id) {
+//                    throw new WebApiException(throwable);
+//                }
+//            };
+//        }
+//    }
 }
 ----
 
@@ -405,21 +375,7 @@ public class FeignExceptionAdvice {
 }
 ----
 
-. Turn off items-service, then try to access it via webapi. Discuss around the error behaviour, then add `WebApiExceptionAdvice` and `ClientExceptionAdvice`.
-+
-[source,java]
-----
-@ControllerAdvice
-public class WebApiExceptionAdvice {
-
-    @ResponseBody
-    @ExceptionHandler(WebApiException.class)
-    @ResponseStatus(HttpStatus.OK)
-    public String WebApiExceptionHandler(WebApiException ex) {
-        return ex.getMessage();
-    }
-}
-----
+. Turn off items-service, then try to access it via webapi. Discuss around the error behaviour, then add `ClientExceptionAdvice`.
 +
 [source,java]
 ----
@@ -436,6 +392,59 @@ public class ClientExceptionAdvice {
 ----
 
 . Access the url:s again to see the exception handling output
+
+. Extra: Another way to add fallback handler: Uncomment in `ItemsServiceProxy`:
++
+[source,java]
+----
+    @FeignClient(name = "items-service", fallbackFactory = ItemsServiceProxy.ItemsServiceFeignClientFallbackFactory.class)
+
+    ...
+
+    @Component
+    class ItemsServiceFeignClientFallbackFactory implements FallbackFactory<ItemsServiceProxy> {
+
+        @Override
+        public ItemsServiceProxy create(Throwable throwable) {
+            return new ItemsServiceProxy() {
+                @Override
+                public List<Item> getItems() {
+                    throw new WebApiException(throwable);
+                }
+
+                @Override
+                public Item getItem(Long id) {
+                    throw new WebApiException(throwable);
+                }
+            };
+        }
+    }
+----
++
+Add `WebApiException.java` and `WebApiExceptionAdvice`
++
+[source,java]
+----
+public class WebApiException extends RuntimeException {
+    public WebApiException(Throwable throwable) {
+        super(throwable);
+    }
+}
+----
++
+[source,java]
+----
+@ControllerAdvice
+public class WebApiExceptionAdvice {
+
+    @ResponseBody
+    @ExceptionHandler(WebApiException.class)
+    @ResponseStatus(HttpStatus.OK)
+    public String WebApiExceptionHandler(WebApiException ex) {
+        return ex.getMessage();
+    }
+}
+----
 
 === Create Gateway
 
@@ -551,6 +560,8 @@ The `items-service` registers metadata about itself when registering to discover
 . Use code from
 .. https://github.com/kenalexandersson/microservicestutorial/blob/master/gateway/src/main/java/org/microservices/gateway/CrewModule.java
 .. https://github.com/kenalexandersson/microservicestutorial/blob/master/gateway/src/main/java/org/microservices/gateway/CrewModuleLoader.java
+
+=== Distributed tracing: Add Sleuth
 
 === Extra: Run two instances of items-service to demo Ribbon
 
