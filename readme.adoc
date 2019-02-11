@@ -2,9 +2,18 @@
 :toc: left
 
 == Prerequisites for participants
-* `git clone ssh://git@git.got.jeppesensystems.com:10022/ken.alexandersson/microservicestutorial.git`
-* Lombok IntelliJ plugin installed
-* Postman, or alternatively JSON Formatter Chrome plugin
+* Bring your computer, or team up with a fellow teammate
+
+The computer should be prepared as follows:
+
+* Clone this project: `git clone ssh://git@git.got.jeppesensystems.com:10022/ken.alexandersson/microservicestutorial.git`
+
+* Install Lombok plugin to your IDE
+IntelliJ:: File -> Settings... -> Plugins, then search for _Lombok Plugin_
+Eclipse:: https://projectlombok.org/setup/eclipse
+
+* Chrome with JSON Formatter plugin
+** https://chrome.google.com/webstore/detail/json-formatter/bcjindcccaagfpapjjmafapmmgkkhgoa?hl=sv
 
 == Running order
 
