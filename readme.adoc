@@ -4,7 +4,7 @@
 == Prerequisites for participants
 * `git clone ssh://git@git.got.jeppesensystems.com:10022/ken.alexandersson/microservicestutorial.git`
 * Lombok IntelliJ plugin installed
-* Postman or alternatively JSON Formatter Chrome plugin
+* Postman, or alternatively JSON Formatter Chrome plugin
 
 == Running order
 
@@ -277,6 +277,10 @@ spring:
   cloud:
     config:
       fail-fast: true
+
+feign:
+  hystrix:
+    enabled: false
 ----
 
 . Go back to `config-server` and add `src/main/resources/config/webapi.yml`
@@ -367,10 +371,10 @@ public class FeignExceptionAdvice {
 
     @ResponseBody
     @ExceptionHandler(FeignException.class)
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
     public String FeignExceptionHandler(FeignException ex) {
         LOGGER.warn(ex.getMessage());
-        return "{}";
+        return "Item not available";
     }
 }
 ----
@@ -384,7 +388,7 @@ public class ClientExceptionAdvice {
 
     @ResponseBody
     @ExceptionHandler(ClientException.class)
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
     public String clientExceptionHandler(ClientException ex) {
         return ex.getMessage();
     }
@@ -397,54 +401,39 @@ public class ClientExceptionAdvice {
 +
 [source,java]
 ----
-    @FeignClient(name = "items-service", fallbackFactory = ItemsServiceProxy.ItemsServiceFeignClientFallbackFactory.class)
+    @FeignClient(name = "items-service", fallbackFactory = ItemsServiceProxy.ItemsServiceClientFallbackFactory.class)
 
     ...
 
     @Component
-    class ItemsServiceFeignClientFallbackFactory implements FallbackFactory<ItemsServiceProxy> {
+    class ItemsServiceClientFallbackFactory implements FallbackFactory<ItemsServiceProxy> {
 
         @Override
         public ItemsServiceProxy create(Throwable throwable) {
             return new ItemsServiceProxy() {
                 @Override
                 public List<Item> getItems() {
-                    throw new WebApiException(throwable);
+                    return Collections.singletonList(new Item(-1L, String.format("fake error item - %s", throwable.getMessage()), 0));
                 }
 
                 @Override
                 public Item getItem(Long id) {
-                    throw new WebApiException(throwable);
+                    return new Item(-1L, String.format("fake error item - %s", throwable.getMessage()), 0);
                 }
             };
         }
     }
 ----
 +
-Add `WebApiException.java` and `WebApiExceptionAdvice`
+. Enable hysterix in `config-server/src/main/resources/config/webapi.yml`
 +
 [source,java]
 ----
-public class WebApiException extends RuntimeException {
-    public WebApiException(Throwable throwable) {
-        super(throwable);
-    }
-}
+feign:
+  hystrix:
+    enabled: true
 ----
-+
-[source,java]
-----
-@ControllerAdvice
-public class WebApiExceptionAdvice {
-
-    @ResponseBody
-    @ExceptionHandler(WebApiException.class)
-    @ResponseStatus(HttpStatus.OK)
-    public String WebApiExceptionHandler(WebApiException ex) {
-        return ex.getMessage();
-    }
-}
-----
+. Restart `config-server` and `webapi`
 
 === Create Gateway
 
