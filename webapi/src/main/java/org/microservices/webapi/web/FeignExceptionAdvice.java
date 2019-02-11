@@ -16,9 +16,9 @@ public class FeignExceptionAdvice {
 
     @ResponseBody
     @ExceptionHandler(FeignException.class)
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
     public String FeignExceptionHandler(FeignException ex) {
         LOGGER.warn(ex.getMessage());
-        return "{}";
+        return "Item not available";
     }
 }

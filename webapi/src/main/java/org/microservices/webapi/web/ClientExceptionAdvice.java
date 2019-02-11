@@ -12,7 +12,7 @@ public class ClientExceptionAdvice {
 
     @ResponseBody
     @ExceptionHandler(ClientException.class)
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
     public String clientExceptionHandler(ClientException ex) {
         return ex.getMessage();
     }
