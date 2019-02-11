@@ -604,4 +604,14 @@ and add bean
 
 === Extra: Run two instances of items-service to demo Ribbon
 
-=== Extra: Add additional reviews-service to demo how webapi can aggregate services output
+=== Extra: reviews-service
+
+Add additional reviews-service to demo how webapi can aggregate services output.
+
+The source code is found in github branch named _additional_. Project/files affected:
+
+* https://github.com/kenalexandersson/microservicestutorial/tree/additional/reviews-service
+
+* https://github.com/kenalexandersson/microservicestutorial/tree/additional/webapi
+
+* https://github.com/kenalexandersson/microservicestutorial/blob/additional/pom.xml
