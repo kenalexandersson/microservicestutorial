@@ -12,7 +12,7 @@ import java.util.List;
 @RestController
 public class WebApiController {
 
-    private Logger LOGGER = LoggerFactory.getLogger(this.getClass());
+    private static final Logger LOGGER = LoggerFactory.getLogger(WebApiController.class);
 
     @Autowired
     private ItemsServiceProxy proxy;

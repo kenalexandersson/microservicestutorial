@@ -9,7 +9,7 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
 
 public class LoggingFilter extends ZuulFilter {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(LoggingFilter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(LoggingFilter.class);
 
     @Override
     public String filterType() {

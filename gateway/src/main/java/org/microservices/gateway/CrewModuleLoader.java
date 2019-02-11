@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 @Component
 public class CrewModuleLoader {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(CrewModule.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CrewModule.class);
 
     @Autowired
     private DiscoveryClient discoveryClient;

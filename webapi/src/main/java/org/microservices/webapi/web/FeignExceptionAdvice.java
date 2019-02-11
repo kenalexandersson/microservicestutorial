@@ -12,13 +12,13 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ControllerAdvice
 public class FeignExceptionAdvice {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(FeignExceptionAdvice.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FeignExceptionAdvice.class);
 
     @ResponseBody
     @ExceptionHandler(FeignException.class)
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
     public String FeignExceptionHandler(FeignException ex) {
         LOGGER.warn(ex.getMessage());
-        return "{}";
+        return "Item not available";
     }
 }
