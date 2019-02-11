@@ -1,8 +1,8 @@
-package org.microservices.itemsservice;
+package org.microservices.webapi;
 
 //@RunWith(SpringRunner.class)
 //@SpringBootTest
-public class ItemsServiceApplicationTests {
+public class WebApiApplicationTests {
 
 //    @Test
     public void contextLoads() {

@@ -1,7 +1,0 @@
-spring:
-  application:
-    name: items-webapi
-  cloud:
-    config:
-      fail-fast: true
-

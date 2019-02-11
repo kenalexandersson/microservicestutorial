@@ -3,15 +3,21 @@ package org.microservices.itemsservice.web;
 import org.microservices.itemsservice.exception.ItemNotFoundException;
 import org.microservices.itemsservice.model.Item;
 import org.microservices.itemsservice.repository.ItemRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
 public class ItemsServiceController {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ItemsServiceController.class);
 
     @Autowired
     private ItemRepository itemRepository;
@@ -27,11 +33,6 @@ public class ItemsServiceController {
                 .collect(Collectors.toList());
     }
 
-    @PostMapping(path = "/items")
-    public ItemDto addItem(@RequestBody Item newItem) {
-        return toItemDto(itemRepository.save(newItem));
-    }
-
     @GetMapping(path = "/items/{id}", produces = "application/json")
     public ItemDto getItem(@PathVariable Long id) {
         Item item = itemRepository.findById(id)
@@ -40,28 +41,9 @@ public class ItemsServiceController {
         return toItemDto(item);
     }
 
-    @PutMapping(path = "/items/{id}", produces = "application/json")
-    public ItemDto updateItem(@RequestBody Item changedItem, @PathVariable Long id) {
-        Item item = itemRepository.findById(id)
-                .map(employee -> {
-                    employee.setName(changedItem.getName());
-                    return itemRepository.save(employee);
-                })
-                .orElseGet(() -> {
-                    changedItem.setId(null);
-                    return itemRepository.save(changedItem);
-                });
-
-        return toItemDto(item);
-    }
-
-    @DeleteMapping("/items/{id}")
-    public void deleteItem(@PathVariable Long id) {
-        itemRepository.deleteById(id);
-    }
-
     private ItemDto toItemDto(Item item) {
         int port = Integer.parseInt(environment.getProperty("local.server.port", "0"));
+        LOGGER.info(String.format("Returning %s", item));
         return ItemDto.of(item, port);
     }
 }

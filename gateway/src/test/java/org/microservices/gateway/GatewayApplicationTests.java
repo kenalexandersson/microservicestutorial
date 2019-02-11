@@ -1,8 +1,8 @@
-package org.microservices.itemsservice;
+package org.microservices.gateway;
 
 //@RunWith(SpringRunner.class)
 //@SpringBootTest
-public class ItemsServiceApplicationTests {
+public class GatewayApplicationTests {
 
 //    @Test
     public void contextLoads() {

@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: webapi
+  cloud:
+    config:
+      fail-fast: true
+

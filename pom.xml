@@ -16,7 +16,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <java.version>10</java.version>
+        <java.version>8</java.version>
         <spring-cloud.version>Greenwich.RELEASE</spring-cloud.version>
     </properties>
 
@@ -24,33 +24,9 @@
         <module>config-server</module>
         <module>service-discovery-server</module>
         <module>items-service</module>
-        <module>reviews-service</module>
-        <module>items-webapi</module>
-        <module>ui-gateway</module>
+        <module>webapi</module>
+        <module>gateway</module>
     </modules>
-
-    <dependencies>
-        <dependency>
-            <groupId>javax.xml.bind</groupId>
-            <artifactId>jaxb-api</artifactId>
-            <version>2.2.11</version>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.xml.bind</groupId>
-            <artifactId>jaxb-core</artifactId>
-            <version>2.2.11</version>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.xml.bind</groupId>
-            <artifactId>jaxb-impl</artifactId>
-            <version>2.2.11</version>
-        </dependency>
-        <dependency>
-            <groupId>javax.activation</groupId>
-            <artifactId>activation</artifactId>
-            <version>1.1.1</version>
-        </dependency>
-    </dependencies>
 
     <dependencyManagement>
         <dependencies>
