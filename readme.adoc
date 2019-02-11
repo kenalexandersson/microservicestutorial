@@ -147,6 +147,12 @@ server:
 eureka:
   client:
     register-with-eureka: true
+  instance:
+    metadata-map:
+      crewmodule: "crewmodule"
+      module-name: "BidPoints"
+      service-path: "/path/to/menuItem"
+      owning-team: "Nimbus"
 
 spring:
   # Enabling h2 console, accessible at http://localhost:8080/h2-console (use JDBC URL: jdbc:h2:mem:testdb, user: sa, password: empty (leave blank))
@@ -168,9 +174,6 @@ logging:
 ----
 
 . Reload config server and view new config via `http://localhost:8888/items-service/native`
-
-. Go to the h2 console to see that database is running
-.. http://localhost:8080/h2-console (use JDBC URL: jdbc:h2:mem:testdb, user: sa, password: empty (leave blank)
 
 . Add data import sql file `data.sql`
 +
@@ -230,24 +233,15 @@ public class ItemDto {
 }
 ----
 
-. Add metadata, `open config-server/src/main/resources/config/items-service.yml` and add:
-+
-----
-eureka:
-  client:
-    register-with-eureka: true
-  instance:
-    metadata-map:
-      crewmodule: "crewmodule"
-      module-name: "BidPoints"
-      service-path: "/path/to/menuItem"
-      owning-team: "Nimbus"
-----
 
 . Start service
 .. note how it retrieves config from config-server
 .. note that it register itself to discovery server
 ... The meta data can be seen at http://localhost:8761/eureka/apps/items-service
+
+.. Go to the h2 console to see that database is running
+... http://localhost:8080/h2-console (use JDBC URL: jdbc:h2:mem:testdb, user: sa, password: empty (leave blank)
+
 
 . Access service using http://localhost:8080/items and http://localhost:8080/items/1
 
@@ -331,8 +325,7 @@ public class Item {
 +
 [source,java]
 ----
-//@FeignClient(name = "items-service", fallbackFactory = ItemsServiceProxy.ItemsServiceFeignClientFallbackFactory.class)
-@FeignClient(name = "items-service", fallbackFactory = ItemsServiceProxy.ItemsServiceFeignClientFallbackFactory.class)
+@FeignClient(name = "items-service")
 @RibbonClient(name = "items-service")
 public interface ItemsServiceProxy {
 
@@ -341,25 +334,6 @@ public interface ItemsServiceProxy {
 
     @GetMapping("/items/{id}")
     Item getItem(@PathVariable Long id);
-
-//    @Component
-//    class ItemsServiceFeignClientFallbackFactory implements FallbackFactory<ItemsServiceProxy> {
-//
-//        @Override
-//        public ItemsServiceProxy create(Throwable throwable) {
-//            return new ItemsServiceProxy() {
-//                @Override
-//                public List<Item> getItems() {
-//                    throw new WebApiException(throwable);
-//                }
-//
-//                @Override
-//                public Item getItem(Long id) {
-//                    throw new WebApiException(throwable);
-//                }
-//            };
-//        }
-//    }
 }
 ----
 
