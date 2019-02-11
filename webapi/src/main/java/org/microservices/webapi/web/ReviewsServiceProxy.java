@@ -1,4 +1,4 @@
-package org.microservices.itemswebapi.web;
+package org.microservices.webapi.web;
 
 import feign.hystrix.FallbackFactory;
 import org.springframework.cloud.netflix.ribbon.RibbonClient;
@@ -13,8 +13,8 @@ import java.util.List;
 @RibbonClient(name = "reviews-service")
 public interface ReviewsServiceProxy {
 
-    @GetMapping("/reviews")
-    List<Review> getReviews();
+    @GetMapping("/reviews/{type}")
+    List<Review> getReviews(@PathVariable String type);
 
     @GetMapping("/reviews/{type}/{typeid}")
     List<Review> getReviews(@PathVariable String type, @PathVariable Long typeid);
@@ -26,13 +26,13 @@ public interface ReviewsServiceProxy {
         public ReviewsServiceProxy create(Throwable throwable) {
             return new ReviewsServiceProxy() {
                 @Override
-                public List<Review> getReviews() {
-                    throw new ItemsWebApiException(throwable);
+                public List<Review> getReviews(@PathVariable String type) {
+                    throw new WebApiException(throwable);
                 }
 
                 @Override
                 public List<Review> getReviews(String type, Long typeid) {
-                    throw new ItemsWebApiException(throwable);
+                    throw new WebApiException(throwable);
                 }
             };
         }

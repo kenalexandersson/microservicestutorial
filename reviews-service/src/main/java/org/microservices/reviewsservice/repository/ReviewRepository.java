@@ -10,5 +10,6 @@ import java.util.Optional;
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, Long> {
 
+    Optional<List<Review>> findByType(String type);
     Optional<List<Review>> findByTypeAndTypeId(String type, Long typeId);
 }

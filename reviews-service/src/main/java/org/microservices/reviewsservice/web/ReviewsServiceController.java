@@ -32,8 +32,18 @@ public class ReviewsServiceController {
         return toReviewDto(reviewRepository.save(newReview));
     }
 
+    @GetMapping(path = "/reviews/{type}", produces = "application/json")
+    public List<ReviewDto> getReviews(@PathVariable String type) {
+        List<Review> reviews = reviewRepository.findByType(type)
+                .orElseThrow(() -> new ReviewNotFoundException(type, null));
+
+        return reviews.stream()
+                .map(this::toReviewDto)
+                .collect(Collectors.toList());
+    }
+
     @GetMapping(path = "/reviews/{type}/{typeId}", produces = "application/json")
-    public List<ReviewDto> getReviews(@PathVariable String type, @PathVariable Long typeId) {
+    public List<ReviewDto> getReviewsForIndividual(@PathVariable String type, @PathVariable Long typeId) {
         List<Review> reviews = reviewRepository.findByTypeAndTypeId(type, typeId)
                 .orElseThrow(() -> new ReviewNotFoundException(type, typeId));
 

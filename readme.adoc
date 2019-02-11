@@ -376,7 +376,7 @@ public interface ItemsServiceProxy {
 @ControllerAdvice
 public class FeignExceptionAdvice {
 
-    private Logger LOGGER = LoggerFactory.getLogger(this.getClass());
+    private static final Logger LOGGER = LoggerFactory.getLogger(FeignExceptionAdvice.class);
 
     @ResponseBody
     @ExceptionHandler(FeignException.class)
@@ -507,7 +507,7 @@ management:
 ----
 public class LoggingFilter extends ZuulFilter {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(LoggingFilter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(LoggingFilter.class);
 
     @Override
     public String filterType() {

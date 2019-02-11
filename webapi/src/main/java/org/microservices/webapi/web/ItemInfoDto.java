@@ -1,7 +1,12 @@
-package org.microservices.itemswebapi.web;
+package org.microservices.webapi.web;
+
+import lombok.Data;
+import lombok.ToString;
 
 import java.util.List;
 
+@Data
+@ToString
 public class ItemInfoDto {
 
     private Item item;
@@ -14,19 +19,5 @@ public class ItemInfoDto {
     private ItemInfoDto(Item item, List<Review> reviews) {
         this.item = item;
         this.reviews = reviews;
-    }
-
-    public Item getItem() {
-        return item;
-    }
-
-    public List<Review> getReview() {
-        return reviews;
-    }
-
-
-    @Override
-    public String toString() {
-        return String.format("ItemInfoDto{item=%s, reviews=%s}", item, reviews);
     }
 }
