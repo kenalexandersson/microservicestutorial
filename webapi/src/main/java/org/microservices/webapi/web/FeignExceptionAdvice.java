@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ControllerAdvice
 public class FeignExceptionAdvice {
 
-    private Logger LOGGER = LoggerFactory.getLogger(this.getClass());
+    private static Logger LOGGER = LoggerFactory.getLogger(FeignExceptionAdvice.class);
 
     @ResponseBody
     @ExceptionHandler(FeignException.class)

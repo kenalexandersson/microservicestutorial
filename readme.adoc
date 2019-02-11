@@ -537,7 +537,14 @@ public class LoggingFilter extends ZuulFilter {
     }
 ----
 
-==== About CrewModule and "menu system"
+. Start service
+.. note how it retrieves config from config-server
+.. note that it register itself to discovery server, http://localhost:8761
+
+. Access service using http://localhost:20202/items and http://localhost:20202/items/1
+
+
+==== Gateway: about CrewModule and "menu system"
 
 The service discovery metadata feature is used to obtain information about a crewmodule and how it should be represented in menu. Here is an example of how it can be loaded.
 
@@ -551,6 +558,40 @@ The `items-service` registers metadata about itself when registering to discover
 .. https://github.com/kenalexandersson/microservicestutorial/blob/master/gateway/src/main/java/org/microservices/gateway/CrewModuleLoader.java
 
 === Distributed tracing: Add Sleuth
+
+. Open
+* `gateway/pom.xml`
+* `webapi/pom.xml`
+* `items-service/pom.xml`
++
+and add
++
+[source,xml]
+----
+    <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-starter-sleuth</artifactId>
+    </dependency>
+----
+
+. Open
+* `GatewayApplication`
+* `WebapiApplication`
+* `ItemsServiceApplication`
++
+and add bean
++
+[source,java]
+----
+    @Bean
+    public Sampler defaultSampler() {
+        return Sampler.ALWAYS_SAMPLE;
+    }
+----
+
+. Start the apps again
+
+. Access Gateway and study the trace in the logs.
 
 === Extra: Run two instances of items-service to demo Ribbon
 
