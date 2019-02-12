@@ -8,18 +8,21 @@ import javax.annotation.PostConstruct;
 import java.util.HashMap;
 import java.util.Map;
 
-@Component
+//@Component
 public class EurekaMetadataReporter {
 
-    @Autowired
-    private ApplicationInfoManager applicationInfoManager;
+    // Example on how to add eureka metadata dynamically
+    // (instead of statically as now in config-server/src/main/resources/config/items-service.yml)
 
-    @PostConstruct
-    private void addMetaData() {
-        Map<String, String> metaData = new HashMap<>();
-        metaData.put("crewmodule", "");
-        metaData.put("description", "Some description");
-
-        //applicationInfoManager.registerAppMetadata(metaData);
-    }
+//    @Autowired
+//    private ApplicationInfoManager applicationInfoManager;
+//
+//    @PostConstruct
+//    private void addMetaData() {
+//        Map<String, String> metaData = new HashMap<>();
+//        metaData.put("crewmodule", "");
+//        metaData.put("description", "Some description");
+//
+//        applicationInfoManager.registerAppMetadata(metaData);
+//    }
 }
