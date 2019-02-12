@@ -43,7 +43,8 @@ public class ItemsServiceController {
 
     private ItemDto toItemDto(Item item) {
         int port = Integer.parseInt(environment.getProperty("local.server.port", "0"));
-        LOGGER.info(String.format("Returning %s", item));
-        return ItemDto.of(item, port);
+        final ItemDto itemDto = ItemDto.of(item, port);
+        LOGGER.info(String.format("Returning %s", itemDto));
+        return itemDto;
     }
 }

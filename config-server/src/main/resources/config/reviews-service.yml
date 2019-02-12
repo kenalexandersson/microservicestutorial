@@ -9,11 +9,11 @@ spring:
     console:
       enabled: true
   jpa:
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
-        format_sql: true
-        generate_statistics: true
+        format_sql: false
+        generate_statistics: false
 
 logging:
   level:

@@ -3,6 +3,8 @@ package org.microservices.reviewsservice.web;
 import org.microservices.reviewsservice.exception.ReviewNotFoundException;
 import org.microservices.reviewsservice.model.Review;
 import org.microservices.reviewsservice.repository.ReviewRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +14,8 @@ import java.util.stream.Collectors;
 
 @RestController
 public class ReviewsServiceController {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ReviewsServiceController.class);
 
     @Autowired
     private ReviewRepository reviewRepository;
@@ -59,6 +63,8 @@ public class ReviewsServiceController {
 
     private ReviewDto toReviewDto(Review review) {
         int port = Integer.parseInt(environment.getProperty("local.server.port", "0"));
-        return ReviewDto.of(review, port);
+        final ReviewDto reviewDto = ReviewDto.of(review, port);
+        LOGGER.info(String.format("Returning %s", reviewDto));
+        return reviewDto;
     }
 }

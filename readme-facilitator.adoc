@@ -1,0 +1,586 @@
+= Spring Cloud micro services tutorial
+:toc: left
+
+== Prerequisites for participants
+* Bring your computer, or team up with a fellow teammate
+
+The computer should be prepared as follows:
+
+* Clone this project: `git clone ssh://git@git.got.jeppesensystems.com:10022/ken.alexandersson/microservicestutorial.git`
+
+* Install Lombok plugin to your IDE
+IntelliJ:: File -> Settings... -> Plugins, then search for _Lombok Plugin_
+Eclipse:: https://projectlombok.org/setup/eclipse
+
+* Chrome with JSON Formatter plugin
+** https://chrome.google.com/webstore/detail/json-formatter/bcjindcccaagfpapjjmafapmmgkkhgoa?hl=sv
+
+== Running order
+
+=== Checkout base project
+This is a maven multi module with a prepared base pom. Initially it is empty of modules.
+
+=== Create Config server
+
+. New module -> Spring Initializr
+
+. Add dependencies
++
+----
+spring-cloud-config-server
+spring-boot-starter-actuator
+----
++
+. Remove content already present in parent pom
+
+. Open `ConfigServerApplication` and add annotation `@EnableConfigServer`
+
+. Create `src/main/resources/application.yml`
++
+----
+spring:
+  application:
+    name: config-server
+  profiles:
+    active: native
+
+  cloud:
+    config:
+      server:
+        native:
+          search-locations: classpath:/config
+
+server:
+  port: 8888
+----
+
+. Start server
+
+. Do a health check at http://localhost:8888/actuator/health
+
+A spring-cloud-config-server normally uses a git-repository as the default location for loading properties. We are instead using a classpath location just during our experimentation.
+
+=== Create service discovery server
+
+. New module -> Spring Initializr
+
+. Add dependencies
++
+----
+spring-cloud-starter-netflix-eureka-server
+spring-cloud-config-client
+spring-boot-starter-actuator
+----
++
+
+. Remove content already present in parent pom
+
+. Open `ServiceDiscoveryServerApplication` and add annotation `@EnableEurekaServer`
+
+. Create `src/main/resources/bootstrap.yml`
++
+----
+spring:
+  application:
+    name: service-discovery-server
+  cloud:
+    config:
+      fail-fast: true
+----
+
+. Go back to `config-server` and add `src/main/resources/config/service-discovery-server.yml`
++
+----
+server:
+  port: 8761
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: false
+----
+
+. Reload config server and view new config via `http://localhost:8888/service-discovery-server/native`
+
+. Start service-discovery-server
+.. note how it retrieves config from config-server
+.. note that it actually register itself to itself
+
+. Go to http://localhost:8761/ and check the UI
+
+=== Create items service
+
+. New module -> Spring Initializr
+
+. Add dependencies
++
+----
+spring-boot-starter-data-jpa
+spring-boot-starter-web
+spring-cloud-config-client
+spring-cloud-starter-netflix-eureka-client
+spring-boot-starter-actuator
+h2
+lombok
+----
++
+
+. Remove content already present in parent pom
+
+. Create `src/main/resources/bootstrap.yml`
++
+----
+spring:
+  application:
+    name: items-service
+  cloud:
+    config:
+      fail-fast: true
+
+server:
+  port: 8080
+----
+
+. Go back to `config-server` and add `src/main/resources/config/items-service.yml`
++
+----
+eureka:
+  client:
+    register-with-eureka: true
+  instance:
+    metadata-map:
+      crewmodule: "crewmodule"
+      module-name: "BidPoints"
+      service-path: "/path/to/menuItem"
+      owning-team: "Nimbus"
+
+spring:
+  # Enabling h2 console, accessible at http://localhost:8080/h2-console (use JDBC URL: jdbc:h2:mem:testdb, user: sa, password: empty (leave blank))
+  h2:
+    console:
+      enabled: true
+  jpa:
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        generate_statistics: false
+
+logging:
+  level:
+    ROOT: INFO
+    org.hibernate.stat: INFO
+    org.hibernate.type: INFO
+----
+
+. Reload config server and view new config via `http://localhost:8888/items-service/native`
+
+. Add data import sql file `data.sql`
++
+----
+insert into item(id, name) values(1, 'Spoon');
+insert into item(id, name) values(2, 'Fork');
+insert into item(id, name) values(3, 'Knife');
+----
+
+. Create JPA-entity `model/Item.java`
++
+[source,java]
+----
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@EqualsAndHashCode
+@ToString
+@Entity
+public class Item {
+
+    @Id
+    @GeneratedValue
+    private Long id;
+
+    private String name;
+}
+----
+
+. Create `persistence/ItemRepository`
++
+[source,java]
+----
+@Repository
+public interface ItemRepository extends JpaRepository<Item, Long> {
+
+}
+----
+
+. Add rest controller `web/ItemsServiceController.java` by copying content from https://github.com/kenalexandersson/microservicestutorial/blob/master/items-service/src/main/java/org/microservices/itemsservice/web/ItemsServiceController.java
+
+. Add class `web/ItemDto.java`
++
+[source,java]
+----
+@Data
+@AllArgsConstructor
+public class ItemDto {
+
+    private Long id;
+    private String name;
+    private int port;
+
+    public static ItemDto of(Item item, int port) {
+        return new ItemDto(item.getId(), item.getName(), port);
+    }
+}
+----
+
+
+. Start service
+.. note how it retrieves config from config-server
+.. note that it register itself to discovery server
+... The meta data can be seen at http://localhost:8761/eureka/apps/items-service
+
+.. Go to the h2 console to see that database is running
+... http://localhost:8080/h2-console (use JDBC URL: jdbc:h2:mem:testdb, user: sa, password: empty (leave blank)
+
+
+. Access service using http://localhost:8080/items and http://localhost:8080/items/1
+
+[TIP]
+Recap diagram
+
+=== Create webapi
+
+. New module -> Spring Initializr
+
+. Add dependencies
++
+----
+spring-cloud-config-client
+spring-cloud-starter-netflix-eureka-client
+spring-boot-starter-web
+spring-cloud-starter-netflix-ribbon
+spring-cloud-starter-openfeign
+spring-boot-starter-actuator
+lombok
+----
++
+
+. Remove content already present in parent pom
+
+. Open `WebApiApplication` and add annotations
+.. `@EnableDiscoveryClient`
+.. `@EnableFeignClients("org.microservices.webapi")`
+
+. Create `src/main/resources/bootstrap.yml`
++
+----
+spring:
+  application:
+    name: webapi
+  cloud:
+    config:
+      fail-fast: true
+
+feign:
+  hystrix:
+    enabled: false
+----
+
+. Go back to `config-server` and add `src/main/resources/config/webapi.yml`
++
+----
+server:
+  port: 8100
+
+eureka:
+  client:
+    register-with-eureka: true
+    service-url:
+      default-zone: http://localhost:8761/eureka
+----
+
+. Reload config server and view new config via `http://localhost:8888/webapi/native`
+
+. Add rest controller `web/WebApiController.java`.
+.. https://github.com/kenalexandersson/microservicestutorial/blob/master/webapi/src/main/java/org/microservices/webapi/web/WebApiController.java
+
+. Create dto `web/Item`
++
+[source,java]
+----
+@Data
+@ToString
+@AllArgsConstructor
+public class Item {
+
+    private Long id;
+
+    private String name;
+
+    private int port;
+}
+----
+
+. Add `ItemsServiceProxy.java` (in a step by step fashion)
++
+[source,java]
+----
+@FeignClient(name = "items-service")
+@RibbonClient(name = "items-service")
+public interface ItemsServiceProxy {
+
+    @GetMapping("/items")
+    List<Item> getItems();
+
+    @GetMapping("/items/{id}")
+    Item getItem(@PathVariable Long id);
+}
+----
+
+. Start service
+.. note how it retrieves config from config-server
+.. note that it register itself to discovery server
+
+. Access service using http://localhost:8100/webapi/items and http://localhost:8100/webapi/items/1
+
+. Access a non-existent item, discuss around the error behaviour, then add `FeignExceptionAdvice`.
++
+[source,java]
+----
+@ControllerAdvice
+public class FeignExceptionAdvice {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(FeignExceptionAdvice.class);
+
+    @ResponseBody
+    @ExceptionHandler(FeignException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public String FeignExceptionHandler(FeignException ex) {
+        LOGGER.warn(ex.getMessage());
+        return "Item not available";
+    }
+}
+----
+
+. Turn off items-service, then try to access it via webapi. Discuss around the error behaviour, then add `ClientExceptionAdvice`.
++
+[source,java]
+----
+@ControllerAdvice
+public class ClientExceptionAdvice {
+
+    @ResponseBody
+    @ExceptionHandler(ClientException.class)
+    @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
+    public String clientExceptionHandler(ClientException ex) {
+        return ex.getMessage();
+    }
+}
+----
+
+. Access the url:s again to see the exception handling output
+
+. Extra: Another way to add fallback handler: Uncomment in `ItemsServiceProxy`:
++
+[source,java]
+----
+    @FeignClient(name = "items-service", fallbackFactory = ItemsServiceProxy.ItemsServiceClientFallbackFactory.class)
+
+    ...
+
+    @Component
+    class ItemsServiceClientFallbackFactory implements FallbackFactory<ItemsServiceProxy> {
+
+        @Override
+        public ItemsServiceProxy create(Throwable throwable) {
+            return new ItemsServiceProxy() {
+                @Override
+                public List<Item> getItems() {
+                    return Collections.singletonList(new Item(-1L, String.format("fake error item - %s", throwable.getMessage()), 0));
+                }
+
+                @Override
+                public Item getItem(Long id) {
+                    return new Item(-1L, String.format("fake error item - %s", throwable.getMessage()), 0);
+                }
+            };
+        }
+    }
+----
++
+. Enable hysterix in `config-server/src/main/resources/config/webapi.yml`
++
+[source,java]
+----
+feign:
+  hystrix:
+    enabled: true
+----
+. Restart `config-server` and `webapi`
+
+=== Create Gateway
+
+. New module -> Spring Initializr
+
+. Add dependencies
++
+----
+spring-cloud-starter-config
+spring-cloud-starter-netflix-eureka-client
+spring-cloud-starter-netflix-zuul
+spring-boot-starter-actuator
+lombok
+----
++
+
+. Remove content already present in parent pom
+
+. Open `GatewayApplication` and add annotation `@EnableZuulProxy`
+
+. Create `src/main/resources/bootstrap.yml`
++
+----
+spring:
+  application:
+    name: gateway
+  cloud:
+    config:
+      fail-fast: true
+----
+
+. Go back to `config-server` and add `src/main/resources/config/gateway.yml`
++
+----
+server:
+  port: 20202
+
+eureka:
+  client:
+    register-with-eureka: true
+    service-url:
+      default-zone: http://localhost:8761/eureka
+
+zuul:
+  routes:
+    webapi:
+      sensitiveHeaders: Cookie,Set-Cookie,Authorization
+      stripPrefix: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+----
+
+. Reload config server and view new config via `http://localhost:8888/gateway/native`
+
+. Create Zuul-filter `LoggingFilter`
++
+[source,java]
+----
+public class LoggingFilter extends ZuulFilter {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(LoggingFilter.class);
+
+    @Override
+    public String filterType() {
+        return PRE_TYPE;
+    }
+
+    @Override
+    public int filterOrder() {
+        return PRE_DECORATION_FILTER_ORDER - 1;
+    }
+
+    @Override
+    public boolean shouldFilter() {
+        RequestContext ctx = RequestContext.getCurrentContext();
+        return !ctx.containsKey(FORWARD_TO_KEY); // if another filter hasn't already forwarded
+    }
+
+    @Override
+    public Object run() {
+
+        RequestContext ctx = RequestContext.getCurrentContext();
+        LOGGER.info(ctx.getRequest().getRequestURL().toString());
+
+        return null;
+    }
+}
+----
+
+. Add the filter as bean in `GatewayApplication`.
++
+[source,java]
+----
+    @Bean
+    public LoggingFilter loggingFilter() {
+        return new LoggingFilter();
+    }
+----
+
+. Start service
+.. note how it retrieves config from config-server
+.. note that it register itself to discovery server, http://localhost:8761
+
+. Access service using http://localhost:20202/items and http://localhost:20202/items/1
+
+
+==== Gateway: about CrewModule and "menu system"
+
+The service discovery metadata feature is used to obtain information about a crewmodule and how it should be represented in menu. Here is an example of how it can be loaded.
+
+[NOTE]
+The `items-service` registers metadata about itself when registering to discovery server. See `config-server/src/main/resources/config/items-service.yml`
+
+. Show metadata in discovery-server: http://localhost:8761/eureka/apps/items-service
+
+. Use code from
+.. https://github.com/kenalexandersson/microservicestutorial/blob/master/gateway/src/main/java/org/microservices/gateway/CrewModule.java
+.. https://github.com/kenalexandersson/microservicestutorial/blob/master/gateway/src/main/java/org/microservices/gateway/CrewModuleLoader.java
+
+=== Distributed tracing: Add Sleuth
+
+. Open
+* `gateway/pom.xml`
+* `webapi/pom.xml`
+* `items-service/pom.xml`
++
+and add
++
+[source,xml]
+----
+    <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-starter-sleuth</artifactId>
+    </dependency>
+----
+
+. Open
+* `GatewayApplication`
+* `WebapiApplication`
+* `ItemsServiceApplication`
++
+and add bean
++
+[source,java]
+----
+    @Bean
+    public Sampler defaultSampler() {
+        return Sampler.ALWAYS_SAMPLE;
+    }
+----
+
+. Start the apps again
+
+. Access Gateway and study the trace in the logs.
+
+=== Extra: Run two instances of items-service to demo Ribbon
+
+=== Extra: reviews-service
+
+Add additional reviews-service to demo how webapi can aggregate services output.
+
+
+

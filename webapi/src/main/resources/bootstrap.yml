@@ -5,3 +5,5 @@ spring:
     config:
       fail-fast: true
 
+logging:
+  file: /tmp/codingsession/logs/webapi.log
