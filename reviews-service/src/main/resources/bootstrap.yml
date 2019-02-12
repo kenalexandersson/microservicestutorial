@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: reviews-service
+  cloud:
+    config:
+      fail-fast: true
+
+server:
+  port: 9090
