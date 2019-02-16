@@ -7,3 +7,7 @@ spring:
 
 logging:
   file: /tmp/codingsession/logs/gateway.log
+  level:
+    ROOT: INFO
+
+

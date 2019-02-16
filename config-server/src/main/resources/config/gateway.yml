@@ -7,11 +7,32 @@ eureka:
     service-url:
       default-zone: http://localhost:8761/eureka
 
-zuul:
-  routes:
-    webapi:
-      sensitiveHeaders: Cookie,Set-Cookie,Authorization
-      stripPrefix: false
+#zuul:
+#  routes:
+#    webapi:
+#      sensitiveHeaders: Cookie,Set-Cookie,Authorization
+#      stripPrefix: false
+
+spring:
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lowerCaseServiceId: true
+          filters:
+            - name: RewritePath
+              args:
+                regexp: "'/' + serviceId + '/(?<remaining>.*)'"
+                replacement: "'/' + serviceId + '/$\\{remaining}'"
+#      routes:
+#        - id: webapi
+#          uri: lb://webapi
+#          order: -1
+#          predicates:
+#            - Path=/webapi/**
+#          filters:
+#            - RewritePath=/webapi/(?<path>.*), /$\{path}
 
 management:
   endpoints:
