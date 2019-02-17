@@ -1,4 +1,5 @@
 
+image:schematic-overview.jpg[]
 
 == Application links
 
