@@ -14,9 +14,13 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 import java.time.LocalDate;
 
+/**
+ * Swagger is available on http://localhost:8100/swagger-ui.html
+ */
 @Configuration
 @EnableSwagger2
 public class SwaggerConfig {
+
     @Bean
     public Docket eDesignApi(SwaggerConfigProperties swaggerConfigProperties) {
         return new Docket(DocumentationType.SWAGGER_2)
@@ -29,6 +33,7 @@ public class SwaggerConfig {
                 .useDefaultResponseMessages(swaggerConfigProperties.getUseDefaultResponseMessages())
                 .enableUrlTemplating(swaggerConfigProperties.getEnableUrlTemplating());
     }
+
     @Bean
     UiConfiguration uiConfig(SwaggerConfigProperties swaggerConfigProperties) {
         return UiConfigurationBuilder.builder()

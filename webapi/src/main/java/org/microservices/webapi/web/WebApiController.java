@@ -21,7 +21,7 @@ public class WebApiController {
     @Autowired
     private ReviewsServiceProxy reviewsServiceProxy;
 
-    @GetMapping(path = "/webapi/items")
+    @GetMapping(path = "/webapi/items", produces = "application/json")
     public List<ItemInfoDto > getItems() {
         List<Item> items = itemsServiceProxy.getItems();
         List<Review> reviews = reviewsServiceProxy.getReviews("item");
@@ -34,7 +34,7 @@ public class WebApiController {
                 .collect(Collectors.toList());
     }
 
-    @GetMapping(path = "/webapi/items/{id}")
+    @GetMapping(path = "/webapi/items/{id}", produces = "application/json")
     public ItemInfoDto getItem(@PathVariable Long id) {
 
         Item item = itemsServiceProxy.getItem(id);
