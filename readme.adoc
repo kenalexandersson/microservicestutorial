@@ -53,6 +53,10 @@ http://localhost:20202/items and http://localhost:20202/items/1
 
 http://localhost:20202/actuator/env (See https://docs.spring.io/spring-boot/docs/current/reference/html/production-ready-endpoints.html for available actuator enpoints)
 
+=== Swagger
+
+http://localhost:8081/swagger-ui.html
+
 == Externa links
 
 Spring initialzr: https://start.spring.io/
