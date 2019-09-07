@@ -35,13 +35,13 @@ http://localhost:8080/items and http://localhost:8080/items/1
 
 http://localhost:8761/eureka/apps/reviews-service
 
-http://localhost:8080/h2-console (use JDBC URL: jdbc:h2:mem:testdb, user: sa, password: empty (leave blank)
+http://localhost:9090/h2-console (use JDBC URL: jdbc:h2:mem:testdb, user: sa, password: empty (leave blank)
 
-http://localhost:8080/reviews
+http://localhost:9090/reviews
 
-http://localhost:8080/reviews/item
+http://localhost:9090/reviews/item
 
-http://localhost:8080/reviews/item/1
+http://localhost:9090/reviews/item/1
 
 === webapi
 
@@ -49,7 +49,7 @@ http://localhost:8100/webapi/items and http://localhost:8100/webapi/items/1
 
 === gateway
 
-http://localhost:20202/items and http://localhost:20202/items/1
+http://localhost:20202/webapi/items and http://localhost:20202/webapi/items/1
 
 http://localhost:20202/actuator/env (See https://docs.spring.io/spring-boot/docs/current/reference/html/production-ready-endpoints.html for available actuator enpoints)
 
